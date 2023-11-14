@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  php_env:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    container_name: php8.2-apache
+    volumes:
+      - ../:/app:rw,cached
+    ports:
+      - 8000:80
+    links:
+      - mysql_db:localdb
+    environment:
+      WEB_DOCUMENT_ROOT: /app/public 
+      PHP_MAX_EXECUTION_TIME: 30
+      PHP_UPLOAD_MAX_FILESIZE: 20M
+      XDEBUG_MODE: debug
+      XDEBUG_START_WITH_REQUEST: yes
+
+  mysql_db:
+    image: mariadb:10.6
+    container_name: mariadb-10.6
+    restart: always
+    volumes:
+      - ../data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+    ports:
+      - 3306:3306
+
+  phpmyadmin:
+    depends_on:
+      - mysql_db
+    image: phpmyadmin:5.2
+    container_name: phpmyadmin-5.2
+    restart: always
+    links:
+      - mysql_db:localdb
+    ports:
+      - 8889:80
+    environment:
+      PMA_HOST: mysql_db
+      MYSQL_ROOT_PASSWORD: password
